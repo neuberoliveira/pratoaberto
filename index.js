@@ -10,7 +10,7 @@ const mealsName = [
     'Refeição da Tarde',
 ]
 
-api.fetchSchool(309199).then(school => {
+/* api.fetchSchool(process.env.SCHOOL_CODE).then(school => {
     // const startDate = calcMenuDate()
     const startDate = new Date('2020-03-16 10:00:00')
     api.fetchMenuWeek(startDate, school).then(resp => {
@@ -28,7 +28,9 @@ api.fetchSchool(309199).then(school => {
             exporter.build(`cardapio-${group.age}.xls`)
         })
     })
-})
+}) */
+
+api.sendMail().catch(err => console.log('promise catch', err))
 
 
 
