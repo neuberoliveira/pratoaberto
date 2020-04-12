@@ -13,8 +13,8 @@ const mealsName = [
 ]
 
 api.fetchSchool(process.env.SCHOOL_CODE).then(school => {
-    // const initDate = calcMenuDate()
-    const initDate = new Date('2020-03-16 10:00:00')
+    const initDate = calcMenuDate()
+    // const initDate = new Date('2020-03-16 10:00:00')
     const startDate = new Date(initDate)
     const endDate = new Date(initDate)
     endDate.setDate(endDate.getDate() + 5)
@@ -40,7 +40,7 @@ api.fetchSchool(process.env.SCHOOL_CODE).then(school => {
                 disposition: 'attachment',
                 content: Buffer.from(exporter.build()).toString('base64'),
             })
-            // exporter.save(`cardapio-${group.age}.xls`, exporter.build())
+            exporter.save(`cardapio-${group.age}.xls`, exporter.build())
         })
         const config = {
             subject: 'Cardapio semanal - Prato Aberto',
