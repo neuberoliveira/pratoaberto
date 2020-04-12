@@ -11,7 +11,7 @@ const setHeader = (h) => header = h
 const setData = (d) => data = d
 const addRow = (row) => data.push(row)
 
-const build = (filename) => {
+const build = () => {
 	// console.log(header)
 	// console.log(data)
 
@@ -21,23 +21,25 @@ const build = (filename) => {
 
 	const content = template.replace('{header}', headertr).replace('{rows}', rowsstr)
 
-	fs.writeFileSync(`./${filename}`, content, { encoding: 'utf8' })
 	return content
 }
 
+const save = (filename, content) => fs.writeFileSync(`./${filename}`, content, { encoding: 'utf8' })
+
 const buildHeader = () => {
-	return `<td></td>\n${header.map(cel => `<td>${cel}</td>`).join("\n")}`
+	return `<td></td>\n${header.map(cel => `<td align="left" valign="top" style="font-size: 14pt; font-weight:bold;">${cel}</td>`).join("\n")}`
 }
 
 const buildContent = () => {
 	return data.map(row => `
 		<tr>
-			${row.map(cel => `<td>${cel}</td>`).join("\n")}
+			${row.map(cel => `<td align="left" valign="top" style="font-size: 12pt;">${cel}</td>`).join("\n")}
 		</tr>`).join("\n")
 }
 module.exports = {
 	init,
 	build,
+	save,
 	setHeader,
 	setData,
 	addRow,

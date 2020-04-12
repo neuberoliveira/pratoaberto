@@ -1,5 +1,7 @@
+require('./typedefs')
 const api = require('./api')
 const exporter = require('./exporter')
+const dateFormat = require('./date-format')
 
 const requiredAges = ['2 a 3 anos', '1 ano']
 const mealsName = [
@@ -10,33 +12,57 @@ const mealsName = [
     'Refeição da Tarde',
 ]
 
-/* api.fetchSchool(process.env.SCHOOL_CODE).then(school => {
-    // const startDate = calcMenuDate()
-    const startDate = new Date('2020-03-16 10:00:00')
-    api.fetchMenuWeek(startDate, school).then(resp => {
+api.fetchSchool(process.env.SCHOOL_CODE).then(school => {
+    // const initDate = calcMenuDate()
+    const initDate = new Date('2020-03-16 10:00:00')
+    const startDate = new Date(initDate)
+    const endDate = new Date(initDate)
+    endDate.setDate(endDate.getDate() + 5)
+
+    api.fetchMenuWeek(initDate, school).then(resp => {
         const groups = groupByAges(resp, requiredAges)
+        const attachments = [];
+
         groups.forEach((group) => {
             exporter.init()
-            exporter.setHeader(group.days.map(day => day.date))
+            exporter.setHeader(group.days.map(day => dateFormat.br(dateFormat.fromApi(day.date))))
 
             mealsName.forEach(meal => {
-                const row = group.days.map(day => day.menu[meal].join("\n"))
+                const row = group.days.map(day => day.menu[meal].join("<br />"))
                 row.unshift(meal)
                 exporter.addRow(row)
             })
 
-            exporter.build(`cardapio-${group.age}.xls`)
+
+            attachments.push({
+                filename: `Cardapio ${group.age}.xls`,
+                type: 'application/vnd.ms-excel',
+                disposition: 'attachment',
+                content: Buffer.from(exporter.build()).toString('base64'),
+            })
+            // exporter.save(`cardapio-${group.age}.xls`, exporter.build())
         })
+        const config = {
+            subject: 'Cardapio semanal - Prato Aberto',
+            body: `Cardapio do periodo de ${dateFormat.br(startDate)} ate ${dateFormat.br(endDate)}`,
+        }
+        api.sendMail(config, attachments).catch(err => console.log('Ops!', err)).then(resp => console.log('Mail sent', resp))
     })
-}) */
-
-api.sendMail().catch(err => console.log('promise catch', err))
+})
 
 
 
 
 
 
+
+/**
+ * Points date to the monday
+ * If Mon to Fri set to last/current Monday
+ * If Sat or Sun set to next Monday
+ * 
+ * @returns Date
+ */
 function calcMenuDate() {
     date = new Date()
     let weekday = date.getDay()
@@ -52,6 +78,11 @@ function calcMenuDate() {
     return date
 }
 
+/**
+ * @param {Array<Menu>} results
+ * @param {Array<string>} ages
+ * @returns {Array<AgesGroup>}
+ */
 function groupByAges(results, ages) {
     const resp = []
     results.forEach((menuResp, menuRespIndex) => menuResp.filter((item) => ages.indexOf(item.idade) !== -1).forEach((row, rowIndex) => {
@@ -73,45 +104,3 @@ function groupByAges(results, ages) {
 
     return resp
 }
-/*
-[
-	{
-		days:[
-			{
-                age: '1 ano',
-				date: '20200316'
-				menu: {
-					'Desjejum': [],
-					'ALmoco': [],
-				}
-			},
-			{
-				date: '20200317'
-				menu: {
-					'Desjejum': [],
-					'ALmoco': [],
-				}
-			}
-		]
-	},
-	{
-        age: '2 a 3 anos',
-		days:[
-			{
-				date: '20200316'
-				menu: {
-					'Desjejum': [],
-					'ALmoco': [],
-				}
-			},
-			{
-				date: '20200317'
-				menu: {
-					'Desjejum': [],
-					'ALmoco': [],
-				}
-			}
-		]
-	}
-]
-*/
